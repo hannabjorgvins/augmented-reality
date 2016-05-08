@@ -2,36 +2,28 @@ import UIKit
 import AVFoundation
 import CoreMotion
 
-class CameraController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
+protocol CameraDelegate {
+    func receiveFrame(frame: UIImage)
+}
+
+class CameraController: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     var session: AVCaptureSession
     var output: AVCaptureVideoDataOutput!
     var captureVideoPreviewLayer: AVCaptureVideoPreviewLayer!
-    var imageView : UIImageView
-    var currentFrame : UIImage?
+    var cameraDelegate : CameraDelegate?
+    var i = 0
     
-    init() {
+    override init() {
+        
         session = AVCaptureSession()
         session.sessionPreset = AVCaptureSessionPresetPhoto
-        imageView = UIImageView()
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func shouldAutorotate() -> Bool {
-        return false
-    }
-    
-    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
-        return UIInterfaceOrientationMask.Portrait
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        self.view.addSubview(imageView)
         
+        super.init()
+        
+        setUpCamera()
+    }
+    
+    func setUpCamera() {
         // create an input from the back-camera of the iPhone, and add to the session
         let devices = AVCaptureDevice.devices() as! [AVCaptureDevice]
         for device in devices {
@@ -50,13 +42,6 @@ class CameraController: UIViewController, AVCaptureVideoDataOutputSampleBufferDe
             }
         }
         
-        // create and add a previewlayer for the video captured (to be displayed on screen)
-        //captureVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.session)
-        //captureVideoPreviewLayer!.frame = self.view.frame
-        //captureVideoPreviewLayer!.connection?.videoOrientation = AVCaptureVideoOrientation.Portrait
-        //captureVideoPreviewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
-        //self.view.layer.addSublayer(captureVideoPreviewLayer)
-        
         // create and add output in the form of still images
         self.output = AVCaptureVideoDataOutput()
         
@@ -72,33 +57,34 @@ class CameraController: UIViewController, AVCaptureVideoDataOutputSampleBufferDe
         
         // start session
         self.session.startRunning()
-
+    }
+    
+    func getPreviewLayer() -> AVCaptureVideoPreviewLayer {
+        // create and add a previewlayer for the video captured (to be displayed on screen)
+        let captureVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.session)
+        captureVideoPreviewLayer!.connection?.videoOrientation = AVCaptureVideoOrientation.Portrait
+        captureVideoPreviewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
+        return captureVideoPreviewLayer
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
-        let priority = DISPATCH_QUEUE_PRIORITY_DEFAULT
-        dispatch_async(dispatch_get_global_queue(priority, 0)) {
-            let image : UIImage = self.convertImageFromCMSampleBufferRef(sampleBuffer!)
-            dispatch_async(dispatch_get_main_queue(), {
-                self.currentFrame = image
-                let iv = UIImageView(image: image)
-                iv.frame = self.view.frame
-                self.view.addSubview(iv)
-                self.imageView.image = self.currentFrame
-                for view in self.view.subviews {
-                    view.removeFromSuperview()
-                }
-                self.view.addSubview(iv)
-            })
-        }
+        let currentFrame : UIImage = self.convertImageFromCMSampleBufferRef(sampleBuffer!)
+        self.cameraDelegate?.receiveFrame(currentFrame)
+        print(i)
+        ++i
     }
     
     func convertImageFromCMSampleBufferRef(sampleBuffer:CMSampleBuffer) -> UIImage {
         let pixelBuffer : CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
         let ciImage : CIImage = CIImage(CVPixelBuffer: pixelBuffer)
-        let context = CIContext(options:nil);
+        let context = CIContext(options:nil)
         let tempImage: CGImageRef = context.createCGImage(ciImage, fromRect: ciImage.extent)
         let image = UIImage(CGImage: tempImage)
         return image
     }
+    
 }
