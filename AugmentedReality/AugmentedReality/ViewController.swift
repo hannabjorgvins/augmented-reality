@@ -4,7 +4,7 @@ import SceneKit
 class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDelegate {
     
     var cameraController : CameraController = CameraController()
-    var scnView : SCNView!
+    var scnView : SCNView = SCNView()
     var currentFrame : UIImage?
 
     func receiveFrame(frame: UIImage) {
@@ -17,20 +17,52 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
         super.viewDidLoad()
         
         let modelView = ModelView()
-        scnView = self.view as! SCNView
-        scnView.backgroundColor = UIColor.blackColor()
+        //scnView = self.view as! SCNView
+        scnView.frame = self.view.frame
+        scnView.backgroundColor = UIColor.clearColor()
         scnView.scene = modelView
         
-        // make scnView a subview of self.view, and set its backgroundcolor to UIColor.clearColor()
+        readCalibrationParameters()
         
         cameraController.cameraDelegate = self
         let previewLayer = cameraController.getPreviewLayer()
         previewLayer.frame = self.view.frame
         self.view.layer.addSublayer(previewLayer)
+        self.view.addSubview(scnView)
         
         let tap = UITapGestureRecognizer(target: self, action: Selector("saveCurrentFrame:"))
         tap.delegate = self
         self.view.addGestureRecognizer(tap)
+        
+    }
+    
+    func readCalibrationParameters() {
+        if let path = NSBundle.mainBundle().pathForResource("CalibrationParams", ofType: "json") {
+            do {
+                let jsonData = try NSData(contentsOfFile: path, options: .DataReadingMappedIfSafe)
+                do {
+                    let jsonResult = try NSJSONSerialization.JSONObjectWithData(jsonData, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary
+                    if let cameraMatrix : NSArray = jsonResult!["CameraMatrix"] as? NSArray {
+                        print(cameraMatrix)
+                    } else {
+                        print("Failed to read CameraMatrix")
+                    }
+                    if let distortion : NSArray = jsonResult!["Distortion"] as? NSArray {
+                        print(distortion)
+                    } else {
+                        print("Failed to read Distortion")
+                    }
+                } catch let error as NSError {
+                    print("Failed to unarchive JSON file")
+                    print(error)
+                }
+            } catch let error as NSError {
+                print("Cannot load JSON file")
+                print(error)
+            }
+        } else {
+            print("Cannot find path")
+        }
     }
 
     func saveCurrentFrame(sender: UITapGestureRecognizer) {
