@@ -55,6 +55,9 @@ class CameraController: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             print("Could not add output device")
         }
         
+    }
+    
+    func startCapturing() {
         // start session
         self.session.startRunning()
     }

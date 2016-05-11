@@ -34,23 +34,33 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
         tap.delegate = self
         self.view.addGestureRecognizer(tap)
         
+        cameraController.startCapturing()
     }
     
     func readCalibrationParameters() {
+        var cameraMatrix : [Float32] = []
+        var distortionMatrix : [Float32] = []
+        
         if let path = NSBundle.mainBundle().pathForResource("CalibrationParams", ofType: "json") {
             do {
                 let jsonData = try NSData(contentsOfFile: path, options: .DataReadingMappedIfSafe)
                 do {
                     let jsonResult = try NSJSONSerialization.JSONObjectWithData(jsonData, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary
-                    if let cameraMatrix : NSArray = jsonResult!["CameraMatrix"] as? NSArray {
+                    if let dict = jsonResult as? [String: AnyObject] {
+                        if let cameraValues = dict["CameraMatrix"] as? [AnyObject] {
+                            for value in cameraValues {
+                                cameraMatrix.append(value as! Float32)
+                            }
+                        }
                         print(cameraMatrix)
+                        if let distortionValues = dict["Distortion"] as? [AnyObject] {
+                            for value in distortionValues {
+                                distortionMatrix.append(value as! Float32)
+                            }
+                        }
+                        print(distortionMatrix)
                     } else {
-                        print("Failed to read CameraMatrix")
-                    }
-                    if let distortion : NSArray = jsonResult!["Distortion"] as? NSArray {
-                        print(distortion)
-                    } else {
-                        print("Failed to read Distortion")
+                        print("Failed to parse JSON file")
                     }
                 } catch let error as NSError {
                     print("Failed to unarchive JSON file")
