@@ -11,7 +11,6 @@ class CameraController: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     var output: AVCaptureVideoDataOutput!
     var captureVideoPreviewLayer: AVCaptureVideoPreviewLayer!
     var cameraDelegate : CameraDelegate?
-    var i = 0
     
     override init() {
         
@@ -77,7 +76,6 @@ class CameraController: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
         let currentFrame : UIImage = self.convertImageFromCMSampleBufferRef(sampleBuffer!)
         self.cameraDelegate?.receiveFrame(currentFrame)
-        ++i
     }
     
     func convertImageFromCMSampleBufferRef(sampleBuffer:CMSampleBuffer) -> UIImage {
