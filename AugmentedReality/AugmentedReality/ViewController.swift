@@ -17,6 +17,7 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
         } else {
             modelView.hideObject()
         }
+        scnView.scene!.background.contents = frame
     }
     
     override func viewDidLoad() {
@@ -27,11 +28,8 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
         scnView.scene = modelView
         
         readCalibrationParameters()
-        
         cameraController.cameraDelegate = self
-        let previewLayer = cameraController.getPreviewLayer()
-        previewLayer.frame = self.view.frame
-        self.view.layer.addSublayer(previewLayer)
+
         self.view.addSubview(scnView)
         
         let tap = UITapGestureRecognizer(target: self, action: Selector("saveCurrentFrame:"))
@@ -96,5 +94,8 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
         // Dispose of any resources that can be recreated.
     }
 
+    override func shouldAutorotate() -> Bool {
+        return false
+    }
 }
 
