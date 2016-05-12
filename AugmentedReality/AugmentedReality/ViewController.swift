@@ -4,20 +4,24 @@ import SceneKit
 class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDelegate {
     
     var cameraController : CameraController = CameraController()
-    var scnView : SCNView = SCNView()
+    var scnView = SCNView()
+    var modelView = ModelView()
     var currentFrame : UIImage?
 
     func receiveFrame(frame: UIImage) {
-        self.currentFrame = frame
-        //scnView.scene?.background.contents = frame
-        // do some cool stuff with the image
+        let transformation = OpenCVWrapper.getTransformationMatrixBetweenObjectPointsAndImage(frame) as! [Double]
+        if transformation.count != 0 {
+            modelView.setCameraTransformationMatrixTo(transformation)
+            modelView.showObject()
+            scnView.playing = true
+        } else {
+            modelView.hideObject()
+        }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let modelView = ModelView()
-        //scnView = self.view as! SCNView
         scnView.frame = self.view.frame
         scnView.backgroundColor = UIColor.clearColor()
         scnView.scene = modelView
@@ -38,8 +42,8 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
     }
     
     func readCalibrationParameters() {
-        var cameraMatrix : [Float32] = []
-        var distortionMatrix : [Float32] = []
+        var cameraMatrix : [Double] = []
+        var distortionMatrix : [Double] = []
         
         if let path = NSBundle.mainBundle().pathForResource("CalibrationParams", ofType: "json") {
             do {
@@ -49,13 +53,13 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
                     if let dict = jsonResult as? [String: AnyObject] {
                         if let cameraValues = dict["CameraMatrix"] as? [AnyObject] {
                             for value in cameraValues {
-                                cameraMatrix.append(value as! Float32)
+                                cameraMatrix.append(value as! Double)
                             }
                         }
                         print(cameraMatrix)
                         if let distortionValues = dict["Distortion"] as? [AnyObject] {
                             for value in distortionValues {
-                                distortionMatrix.append(value as! Float32)
+                                distortionMatrix.append(value as! Double)
                             }
                         }
                         print(distortionMatrix)
@@ -73,6 +77,12 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
         } else {
             print("Cannot find path")
         }
+        
+        OpenCVWrapper.setCameraMatrix(cameraMatrix)
+        OpenCVWrapper.setDistortionCoefficients(distortionMatrix)
+        OpenCVWrapper.setObjectPoints([1.0, 1.0, -1.0, -1.0,
+                                       0.0, 0.0, 0.0, 0.0,
+                                       -1.0, 1.0, 1.0, -1.0])
     }
 
     func saveCurrentFrame(sender: UITapGestureRecognizer) {
