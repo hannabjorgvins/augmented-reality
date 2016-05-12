@@ -77,7 +77,6 @@ class CameraController: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
         let currentFrame : UIImage = self.convertImageFromCMSampleBufferRef(sampleBuffer!)
         self.cameraDelegate?.receiveFrame(currentFrame)
-        print(i)
         ++i
     }
     
