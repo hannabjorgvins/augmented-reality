@@ -25,6 +25,7 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
         
         scnView.frame = self.view.frame
         scnView.backgroundColor = UIColor.clearColor()
+        scnView.autoenablesDefaultLighting = true
         scnView.scene = modelView
         
         readCalibrationParameters()
@@ -79,7 +80,7 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
         OpenCVWrapper.setCameraMatrix(cameraMatrix)
         OpenCVWrapper.setDistortionCoefficients(distortionMatrix)
         OpenCVWrapper.setObjectPoints([1.0, 1.0, -1.0, -1.0,
-                                       0.0, 0.0, 0.0, 0.0,
+                                       -1.0, -1.0, -1.0, -1.0,
                                        -1.0, 1.0, 1.0, -1.0])
     }
 
