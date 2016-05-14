@@ -9,7 +9,6 @@ protocol CameraDelegate {
 class CameraController: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     var session: AVCaptureSession
     var output: AVCaptureVideoDataOutput!
-    var captureVideoPreviewLayer: AVCaptureVideoPreviewLayer!
     var cameraDelegate : CameraDelegate?
     
     override init() {
@@ -67,14 +66,6 @@ class CameraController: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     func startCapturing() {
         // start session
         self.session.startRunning()
-    }
-    
-    func getPreviewLayer() -> AVCaptureVideoPreviewLayer {
-        // create and add a previewlayer for the video captured (to be displayed on screen)
-        let captureVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.session)
-        captureVideoPreviewLayer!.connection?.videoOrientation = AVCaptureVideoOrientation.Portrait
-        captureVideoPreviewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
-        return captureVideoPreviewLayer
     }
     
     required init?(coder aDecoder: NSCoder) {

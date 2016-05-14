@@ -9,6 +9,7 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
     var currentFrame : UIImage?
 
     func receiveFrame(frame: UIImage) {
+        self.currentFrame = frame
         let transformation = OpenCVWrapper.getTransformationMatrixBetweenObjectPointsAndImage(frame) as! [Double]
         if transformation.count != 0 {
             modelView.setCameraTransformationMatrixTo(transformation)
@@ -17,13 +18,14 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
         } else {
             modelView.hideObject()
         }
-        scnView.scene!.background.contents = frame
+        modelView.background.contents = frame
+
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        scnView.frame = self.view.frame
+        scnView.frame = self.view.bounds
         scnView.backgroundColor = UIColor.clearColor()
         scnView.autoenablesDefaultLighting = true
         scnView.scene = modelView
