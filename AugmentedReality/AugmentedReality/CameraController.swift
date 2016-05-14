@@ -28,6 +28,14 @@ class CameraController: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         for device in devices {
             if device.position == AVCaptureDevicePosition.Back && device.hasMediaType(AVMediaTypeVideo) {
                 do {
+                    do {
+                        try device.lockForConfiguration()
+                        device.focusMode = .Locked
+                        device.unlockForConfiguration()
+                    } catch let error as NSError {
+                        print(error)
+                    }
+                    
                     let inputDevice = try AVCaptureDeviceInput(device: device)
                     if self.session.canAddInput(inputDevice) {
                         self.session.addInput(inputDevice)
@@ -82,7 +90,15 @@ class CameraController: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         let pixelBuffer : CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
         let ciImage : CIImage = CIImage(CVPixelBuffer: pixelBuffer)
         let context = CIContext(options:nil)
-        let tempImage: CGImageRef = context.createCGImage(ciImage, fromRect: ciImage.extent)
+        
+        let height = ciImage.extent.height
+        let screenHeight = UIScreen.mainScreen().bounds.height
+        let screenWidth = UIScreen.mainScreen().bounds.width
+        let scaleFactor = height / screenHeight
+        let largeImageSize = CGSize(width: screenWidth * scaleFactor, height: height)
+        let rect = CGRect(origin: ciImage.extent.origin, size: largeImageSize)
+        
+        let tempImage: CGImageRef = context.createCGImage(ciImage, fromRect: rect)
         let image = UIImage(CGImage: tempImage)
         return image
     }
