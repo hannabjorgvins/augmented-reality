@@ -1,5 +1,6 @@
 
 import SceneKit
+import AVFoundation
 
 class ModelView : SCNScene {
     
@@ -29,6 +30,26 @@ class ModelView : SCNScene {
     
     func showObject() {
         self.rootNode.addChildNode(objectNode)
+    }
+    
+    func createCameraProjectionMatrixFrom(cameraMatrix: [Double]) {
+        let near = Float(cameraNode.camera!.zNear)
+        let far = Float(cameraNode.camera!.zFar)
+        let width = Float(cameraMatrix[2])
+        let height = Float(cameraMatrix[5])
+        
+        var projection = SCNMatrix4Identity
+        projection.m11 = (2 * Float(cameraMatrix[0])) / width
+        projection.m12 = (-2 * Float(cameraMatrix[1])) / width
+        projection.m13 = (width - (2 * Float(cameraMatrix[2]))) / width
+        projection.m22 = (2 * Float(cameraMatrix[4])) / height
+        projection.m23 = (-height + (2 * Float(cameraMatrix[5]))) / height
+        projection.m33 = (-far - near) / (far - near)
+        projection.m34 = (-2 * far * near) / (far - near)
+        projection.m43 = -1
+        projection.m44 = 0
+        
+        cameraNode.camera?.setProjectionTransform(projection)
     }
     
     func setCameraTransformationMatrixTo(transformationMatrix: [Double]) {

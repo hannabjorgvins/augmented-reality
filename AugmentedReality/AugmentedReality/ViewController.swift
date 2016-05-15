@@ -19,7 +19,6 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
             modelView.hideObject()
         }
         modelView.background.contents = frame
-
     }
     
     override func viewDidLoad() {
@@ -84,6 +83,7 @@ class ViewController: UIViewController, CameraDelegate, UIGestureRecognizerDeleg
         OpenCVWrapper.setObjectPoints([1.0, 1.0, -1.0, -1.0,
                                        -1.0, -1.0, -1.0, -1.0,
                                        -1.0, 1.0, 1.0, -1.0])
+        modelView.createCameraProjectionMatrixFrom(cameraMatrix)
     }
 
     func saveCurrentFrame(sender: UITapGestureRecognizer) {
