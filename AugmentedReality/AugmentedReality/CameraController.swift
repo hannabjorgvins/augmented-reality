@@ -27,14 +27,6 @@ class CameraController: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         for device in devices {
             if device.position == AVCaptureDevicePosition.Back && device.hasMediaType(AVMediaTypeVideo) {
                 do {
-                    do {
-                        try device.lockForConfiguration()
-                        device.focusMode = .Locked
-                        device.unlockForConfiguration()
-                    } catch let error as NSError {
-                        print(error)
-                    }
-                    
                     let inputDevice = try AVCaptureDeviceInput(device: device)
                     if self.session.canAddInput(inputDevice) {
                         self.session.addInput(inputDevice)
